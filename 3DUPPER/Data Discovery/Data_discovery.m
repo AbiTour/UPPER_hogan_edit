@@ -10,7 +10,7 @@ Np=ND/Framedim;
 RawData3D=reshape(RawData,[Np,Framedim,Ns]); %reshape
 concatinated=RawData3D(:,:,1:2000);
 %concatinated=Data_3D  %% data should add to this part by user
-Data_label={'bp1','bp2','bp3','bp4','bp5','pb6','pb7','bp8','bp9','bp10','bp11'} %% body points should  add to this part by user
+Data_label={'bp1','bp2','bp3','bp4','bp5','pb6','pb7','bp8','bp9','bp10',} %% body points should  add to this part by user
 %%
 Np=size(concatinated,1);
 Dim=size(concatinated,2);
