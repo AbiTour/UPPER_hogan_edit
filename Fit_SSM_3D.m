@@ -10,11 +10,21 @@ Ndim = 3;
 THeig = 0.9;
 
 
+all_triangulated_files = dir(fullfile(triangulated_data_path, '*mouse*'));
+filename = cell(1,length(all_triangulated_files));
+
+% loop through all filenames and load them into cell array
+for i = 1:length(all_triangulated_files)
+    
+    filename{i} = all_triangulated_files(i).name;
+
+end
+
 %load SSM
 %MIKE: 
 if strcmp(which_part,'body')
    ind = 1:7;
-   load('SSM_body.mat','Mean_pPCA','eignValues','eignVectors');
+   load('mouse1_10_3Dssm.mat','Mean_pPCA','eignValues','eignVectors');
    min_num = 6;
 elseif strcmp(which_part,'tail')
    ind = 8:10; 
@@ -41,8 +51,10 @@ for n = 1:Nfile
  
 end
 
+Nframe = size(Maindata, 3);
+
 %remove some body parts (body or tail)
-X = X(ind,:,:);
+X = Maindata(ind,:,:);
 Nbp = numel(ind);
 
 %rearrange model 
