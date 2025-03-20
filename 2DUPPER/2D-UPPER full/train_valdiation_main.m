@@ -1,6 +1,5 @@
 clc; clear all, close all;
 %%
-%%% Hellooooo
 %%% data preperation after DLC, it check low Liklihoods and put Nan instead
 load('Maindata_2D.mat');
 Data_p=Maindata;  
