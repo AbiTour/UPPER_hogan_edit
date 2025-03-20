@@ -58,6 +58,11 @@ selected_3D_data = selected_3D_data(:,:,ind_rand);
 % and eigenpose
 [Data_3D_KNN Mean_Ransac_3D Mean_pPCA Cov_pPCA eignValues eignVectors]=Estimation_Model(selected_3D_data,0.8);
 
+<<<<<<< Updated upstream
 % save model
 save(SSM_model_name_path, "Data_3D_KNN", "Mean_Ransac_3D", "Mean_pPCA", "Cov_pPCA", "eignValues", "eignVectors"); 
 
+=======
+
+%%
+>>>>>>> Stashed changes

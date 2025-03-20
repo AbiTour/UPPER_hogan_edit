@@ -28,12 +28,20 @@ end
 Neig = min(find(cumsum(eignValues)/sum(eignValues)>THeig));
 
 %load coordinates
-[X,lik] = load_coordinates(filename);
-[Nbp,Nframe] = size(lik);
+%load 3D coordinates from all files
+Nfile = numel(filename);
+Maindata = [];
+for n = 1:Nfile
+    
+    n_data = load(fullfile(triangulated_data_path,filename{n}), 'X');
+    n_data = n_data.X;
+
+    Maindata = cat(3,Maindata, n_data);
+ 
+end
 
 %remove some body parts (body or tail)
 X = X(ind,:,:);
-lik = lik(ind,:); 
 Nbp = numel(ind);
 
 %remove outliers
@@ -54,8 +62,8 @@ for i=1:Nbp*Ndim
 end
 P = P(:,:,1:Neig);
 
-%fit the 2D data
-Xfit = zeros(Nbp,2,Nframe); 
+%fit the 3D data
+Xfit = zeros(Nbp,3,Nframe); %changed dim2 to 3
 b = zeros(Neig,Nframe);
 C = zeros(1,Nframe);
 A = zeros(1,Nframe);

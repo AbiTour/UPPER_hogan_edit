@@ -1,23 +1,24 @@
 function[Xfit,b,t] = Fit_SSM(filename, which_part)
 % MIKE: enter one filename with path e.g.
- filename = {'C:\PhD 2nd Year\DLC Extinction Data\mouse20_extinction_p2_2024-10-18-161154-0000DLC_resnet50_Fear Extinction No ImplantOct15shuffle1_500000.csv'};
+ filename = 'D:\PhD 2nd Year\dlc_data_cohort2\triangulated_3D_data\threshold_06';
 
 %which_part is 'body' or 'tail' depending whether you re going to
 %estimate Statistical Shape Model for body or tail. They will be saved separately. 
 
 %init parameters
-Ndim = 2; THeig = 0.9;
-THlik = 0.8; %outliers
+Ndim = 3; 
+THeig = 0.9;
+
 
 %load SSM
 %MIKE: 
 if strcmp(which_part,'body')
    ind = 1:7;
-   load('SSM_body.mat','mean_pPCA','eignValues','eignVectors');
+   load('SSM_body.mat','Mean_pPCA','eignValues','eignVectors');
    min_num = 6;
 elseif strcmp(which_part,'tail')
    ind = 8:10; 
-   load('SSM_tail.mat','mean_pPCA','eignValues','eignVectors');
+   load('SSM_tail.mat','Mean_pPCA','eignValues','eignVectors');
    min_num = 3;
 else
    disp('Valid INPUTs: "body" or "tail"');
@@ -28,34 +29,34 @@ end
 Neig = min(find(cumsum(eignValues)/sum(eignValues)>THeig));
 
 %load coordinates
-[X,lik] = load_coordinates(filename);
-[Nbp,Nframe] = size(lik);
+%load 3D coordinates from all files
+Nfile = numel(filename);
+Maindata = [];
+for n = 1:Nfile
+    
+    n_data = load(fullfile(triangulated_data_path,filename{n}), 'X');
+    n_data = n_data.X;
+
+    Maindata = cat(3,Maindata, n_data);
+ 
+end
 
 %remove some body parts (body or tail)
 X = X(ind,:,:);
-lik = lik(ind,:); 
 Nbp = numel(ind);
-
-%remove outliers
-for n = 1:Nframe
-    ind_out = find(lik(:,n)<THlik);
-    if numel(ind_out)
-        X(ind_out,:,n) = NaN;
-    end
-end
 
 %rearrange model 
 lambda = eignValues(1:Neig);
 var_res = mean(eignValues(Neig+1:end));
-mean_pose = mean_pPCA;
+mean_pose = Mean_pPCA;
 eigen2=reshape(eignVectors(:,:),Ndim,Nbp,Nbp*Ndim);
 for i=1:Nbp*Ndim
     P(:,:,i)=(eigen2(:,:,i)');
 end
 P = P(:,:,1:Neig);
 
-%fit the 2D data
-Xfit = zeros(Nbp,2,Nframe); 
+%fit the 3D data
+Xfit = zeros(Nbp,Ndim,Nframe); 
 b = zeros(Neig,Nframe);
 C = zeros(1,Nframe);
 A = zeros(1,Nframe);
