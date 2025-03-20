@@ -56,7 +56,7 @@ selected_3D_data = selected_3D_data(:,:,ind_rand);
 % Estimation_Model function eceives the 3D data and return the Data which all missing data filled up and  mean
 % estimated by Ransac, Mean of pPCA, Covariance of pPCA and Eigenvalues
 % and eigenpose
-[Data_3D_KNN Mean_Ransac_3D Mean_pPCA Cov_pPCA eignValues eignVectors]=Estimation_Model(selected_3D_data,0.8);
+[Data_3D_KNN Mean_Ransac_3D Mean_pPCA Cov_pPCA eignValues eignVectors]=Estimation_Model( selected_3D_data,0.8);
 
 
 %%

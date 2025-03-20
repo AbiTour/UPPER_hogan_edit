@@ -13,7 +13,7 @@ Data_3D_align = Alignment(RawData3D, mean_pose_3D);
 K = 5;
 Data_3D_KNN = Near_NaN_Euclidian(Data_3D_align, K, false);
 Data_3D_KNN_P=Data_3D_KNN ;
-Data_KNN_reshape=reshape(Data_3D_KNN, Np*Framedim,Ns);
+% Data_KNN_reshape=reshape(Data_3D_KNN, Np*Framedim,Ns);
 %%%%%%%
 %PPCA
 [mean_pose_ppca, ~, Cov_pPCA, eignValues, eignVectors] = pPCA(Data_3D_KNN,Threshold_Eigen,true);
