@@ -1,4 +1,4 @@
-function[] = Estimate_SSM_3D(which_part, triangulated_data_path, SSM_model_name)
+function[] = Estimate_SSM_3D(which_part, triangulated_data_path, SSM_model_name_path)
 %INPUT: which_part is 'body' or 'tail' depending whether you re going to
 %estimate Statistical Shape Model for body or tail. They will be saved separately. 
 
@@ -58,6 +58,6 @@ selected_3D_data = selected_3D_data(:,:,ind_rand);
 % and eigenpose
 [Data_3D_KNN Mean_Ransac_3D Mean_pPCA Cov_pPCA eignValues eignVectors]=Estimation_Model(selected_3D_data,0.8);
 
-
-%%
+% save model
+save(SSM_model_name_path, "Data_3D_KNN", "Mean_Ransac_3D", "Mean_pPCA", "Cov_pPCA", "eignValues", "eignVectors"); 
 
