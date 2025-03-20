@@ -1,6 +1,6 @@
 function[Xfit,b,t] = Fit_SSM(filename, which_part)
 % MIKE: enter one filename with path e.g.
- filename = {'C:\PhD 2nd Year\DLC Extinction Data\mouse6_extinction_p1_2024-10-04-103107-0000DLC_resnet50_Fear Extinction No ImplantOct15shuffle1_500000.csv'};
+ filename = {'C:\PhD 2nd Year\DLC Extinction Data\mouse20_extinction_p2_2024-10-18-161154-0000DLC_resnet50_Fear Extinction No ImplantOct15shuffle1_500000.csv'};
 
 %which_part is 'body' or 'tail' depending whether you re going to
 %estimate Statistical Shape Model for body or tail. They will be saved separately. 
@@ -12,11 +12,11 @@ THlik = 0.8; %outliers
 %load SSM
 %MIKE: 
 if strcmp(which_part,'body')
-   ind = [1:7 11 12];
+   ind = [1:7];
    load('SSM_body.mat','mean_pose_2D_ppca','eignValues','eignVectors');
    min_num = 6;
 elseif strcmp(which_part,'tail')
-   ind = [7:10]; 
+   ind = [8:10]; 
    load('SSM_tail.mat','mean_pose_2D_ppca','eignValues','eignVectors');
    min_num = 3;
 else
