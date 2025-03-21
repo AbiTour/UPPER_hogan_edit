@@ -1,4 +1,4 @@
-function[Xfit,b,t] = Fit_SSM_3D(triangulated_data_path, which_part)
+function[Xfit,b,t] = Fit_SSM_3D(triangulated_data_path, which_part, save_path)
 
 %which_part is 'body' or 'tail' depending whether you re going to
 %use fit SSM for body or tail. They will be saved separately. 
@@ -71,7 +71,7 @@ A_all_data = zeros(1,Nframe);
 T_all_data = zeros(3,Nframe);
 missing_all_data = true(1,Nframe);
 
-for n = 1:Nframe
+parfor n = 1:Nframe
     [Xfit_all_data(:,:,n),b_all_data(:,n),A_all_data(n),T_all_data(:,n),C_all_data(n),missing_all_data(n)] = fit_data(X_all_data(:,:,n),lambda,mean_pose,P,var_res,min_num);
     fprintf('frame %s of %s\n',num2str(n),num2str(Nframe));
 end
@@ -100,7 +100,7 @@ for n = 1:Nfile
     T = T_all_data(:, frame_start:frame_end);
 
     % Save the fitted data with the appropriate filename
-    save(fullfile(triangulated_data_path, [filename{n}(1:end-4) '_' which_part '_fit.mat']), ...
+    save(fullfile(save_path, [filename{n}(1:end-4) '_' which_part '_fit.mat']), ...
         'b', 'Xfit', 'C', 'X', 'missing', 'A', 'T');
 
     % Update frame counter
@@ -118,7 +118,7 @@ options = optimoptions('fminunc','Display','none');
 b0 = zeros(Nshape,1);
 
 % Check if there are any NaNs in X
-    if any(isnan(X(:)))
+    if sum(isnan(X(:)))>5
         missing = true;  % Mark this frame as missing
         Xfit = NaN * mean_pose;
         T = NaN(3, 1);  % Set 3D translation as NaN
