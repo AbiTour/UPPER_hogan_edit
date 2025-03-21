@@ -1,23 +1,30 @@
-function[Xfit,b,t] = Fit_SSM(filename, which_part)
-% MIKE: enter one filename with path e.g.
- filename = {'C:\PhD 2nd Year\DLC Extinction Data\mouse20_extinction_p2_2024-10-18-161154-0000DLC_resnet50_Fear Extinction No ImplantOct15shuffle1_500000.csv'};
+function[Xfit,b,t] = Fit_SSM(triangulated_data_path, which_part)
 
 %which_part is 'body' or 'tail' depending whether you re going to
 %estimate Statistical Shape Model for body or tail. They will be saved separately. 
 
 %init parameters
-Ndim = 2; THeig = 0.9;
-THlik = 0.8; %outliers
+Ndim = 3; 
+THeig = 0.9;
 
-%load SSM
-%MIKE: 
+
+all_triangulated_files = dir(fullfile(triangulated_data_path, '*mouse*'));
+filename = cell(1,length(all_triangulated_files));
+
+% loop through all filenames and load them into cell array
+for i = 1:length(all_triangulated_files)
+    
+    filename{i} = all_triangulated_files(i).name;
+end
+
+% Load SSM
 if strcmp(which_part,'body')
    ind = 1:7;
-   load('SSM_body.mat','mean_pPCA','eignValues','eignVectors');
+   load('mouse1_10_3Dssm.mat','Mean_pPCA','eignValues','eignVectors');
    min_num = 6;
 elseif strcmp(which_part,'tail')
    ind = 8:10; 
-   load('SSM_tail.mat','mean_pPCA','eignValues','eignVectors');
+   load('SSM_tail.mat','Mean_pPCA','eignValues','eignVectors');
    min_num = 3;
 else
    disp('Valid INPUTs: "body" or "tail"');
@@ -40,22 +47,16 @@ for n = 1:Nfile
  
 end
 
-%remove some body parts (body or tail)
-X = X(ind,:,:);
-Nbp = numel(ind);
+Nframe = size(Maindata, 3);
 
-%remove outliers
-for n = 1:Nframe
-    ind_out = find(lik(:,n)<THlik);
-    if numel(ind_out)
-        X(ind_out,:,n) = NaN;
-    end
-end
+%select only body or tail keypoints
+X = Maindata(ind,:,:);
+Nbp = numel(ind);
 
 %rearrange model 
 lambda = eignValues(1:Neig);
 var_res = mean(eignValues(Neig+1:end));
-mean_pose = mean_pPCA;
+mean_pose = Mean_pPCA;
 eigen2=reshape(eignVectors(:,:),Ndim,Nbp,Nbp*Ndim);
 for i=1:Nbp*Ndim
     P(:,:,i)=(eigen2(:,:,i)');
@@ -63,19 +64,48 @@ end
 P = P(:,:,1:Neig);
 
 %fit the 3D data
-Xfit = zeros(Nbp,3,Nframe); %changed dim2 to 3
-b = zeros(Neig,Nframe);
-C = zeros(1,Nframe);
-A = zeros(1,Nframe);
-T = zeros(2,Nframe);
-missing = true(1,Nframe);
+Xfit_all_data = zeros(Nbp,Ndim,Nframe); 
+b_all_data = zeros(Neig,Nframe);
+C_all_data = zeros(1,Nframe);
+A_all_data = zeros(1,Nframe);
+T_all_data = zeros(2,Nframe);
+missing_all_data = true(1,Nframe);
 for n = 1:Nframe
-    [Xfit(:,:,n),b(:,n),A(n),T(:,n),C(n),missing(n)] = fit_data(X(:,:,n),lambda,mean_pose,P,var_res,min_num);
-    disp(sprintf('frame %s of %s',num2str(n),num2str(Nframe)));
+    [Xfit_all_data(:,:,n),b_all_data(:,n),A_all_data(n),T_all_data(:,n),C_all_data(n),missing_all_data(n)] = fit_data(X(:,:,n),lambda,mean_pose,P,var_res,min_num);
+    fprintf('frame %s of %s\n',num2str(n),num2str(Nframe));
 end
 
-%save data
-save([filename{1}(1:end-4) '_' which_part '_fit'],'b','Xfit','C','X','missing','A','T'); 
+% Save data separately for each file
+frame_start = 1;
+
+for n = 1:Nfile
+    % Load the original data to get the frame count for each file
+    n_data = load(fullfile(triangulated_data_path, filename{n}), 'X');
+    n_data = n_data.X;
+    
+    % Extract number of frames per file
+    Nframe_file = size(n_data, 3);
+    % Calculate final frame index of current file (with respect to
+    % concatenated variables)
+    frame_end = frame_start + Nframe_file - 1;
+
+    % Extract corresponding portion of fitted data
+    Xfit = Xfit_all_data(:, :, frame_start:frame_end);
+    b = b_all_data(:, frame_start:frame_end);
+    C = C_all_data(frame_start:frame_end);
+    X = Maindata(:, :, frame_start:frame_end);
+    missing = missing_all_data(frame_start:frame_end);
+    A = A_all_data(:, frame_start:frame_end);
+    T = T_all_data(:, frame_start:frame_end);
+
+    % Save the fitted data with the appropriate filename
+    save(fullfile(triangulated_data_path, [filename{n}(1:end-4) '_' which_part '_fit.mat']), ...
+        'b', 'Xfit', 'C', 'X', 'missing', 'A', 'T');
+
+    % Update frame counter
+    frame_start = frame_end + 1;
+end
+
 
 function[Xfit,b,A,T,C,missing] = fit_data(X,lambda,mean_pose,P,var_res,min_num)
 alpha_reg = 0.1;% 0.001;

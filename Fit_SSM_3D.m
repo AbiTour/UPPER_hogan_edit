@@ -1,9 +1,7 @@
-function[Xfit,b,t] = Fit_SSM(filename, which_part)
-% MIKE: enter one filename with path e.g.
- filename = 'D:\PhD 2nd Year\dlc_data_cohort2\triangulated_3D_data\threshold_06';
+function[Xfit,b,t] = Fit_SSM(triangulated_data_path, which_part)
 
 %which_part is 'body' or 'tail' depending whether you re going to
-%estimate Statistical Shape Model for body or tail. They will be saved separately. 
+%use fit SSM for body or tail. They will be saved separately. 
 
 %init parameters
 Ndim = 3; 
@@ -17,11 +15,9 @@ filename = cell(1,length(all_triangulated_files));
 for i = 1:length(all_triangulated_files)
     
     filename{i} = all_triangulated_files(i).name;
-
 end
 
-%load SSM
-%MIKE: 
+% Load SSM
 if strcmp(which_part,'body')
    ind = 1:7;
    load('mouse1_10_3Dssm.mat','Mean_pPCA','eignValues','eignVectors');
@@ -53,8 +49,8 @@ end
 
 Nframe = size(Maindata, 3);
 
-%remove some body parts (body or tail)
-X = Maindata(ind,:,:);
+%select only body or tail keypoints
+X_all_data = Maindata(ind,:,:);
 Nbp = numel(ind);
 
 %rearrange model 
@@ -68,19 +64,49 @@ end
 P = P(:,:,1:Neig);
 
 %fit the 3D data
-Xfit = zeros(Nbp,Ndim,Nframe); 
-b = zeros(Neig,Nframe);
-C = zeros(1,Nframe);
-A = zeros(1,Nframe);
-T = zeros(2,Nframe);
-missing = true(1,Nframe);
-for n = 1:Nframe
-    [Xfit(:,:,n),b(:,n),A(n),T(:,n),C(n),missing(n)] = fit_data(X(:,:,n),lambda,mean_pose,P,var_res,min_num);
-    disp(sprintf('frame %s of %s',num2str(n),num2str(Nframe)));
+Xfit_all_data = zeros(Nbp,Ndim,Nframe); 
+b_all_data = zeros(Neig,Nframe);
+C_all_data = zeros(1,Nframe);
+A_all_data = zeros(1,Nframe);
+T_all_data = zeros(2,Nframe);
+missing_all_data = true(1,Nframe);
+
+parfor n = 1:Nframe
+    [Xfit_all_data(:,:,n),b_all_data(:,n),A_all_data(n),T_all_data(:,n),C_all_data(n),missing_all_data(n)] = fit_data(X_all_data(:,:,n),lambda,mean_pose,P,var_res,min_num);
+    fprintf('frame %s of %s\n',num2str(n),num2str(Nframe));
 end
 
-%save data
-save([filename{1}(1:end-4) '_' which_part '_fit'],'b','Xfit','C','X','missing','A','T'); 
+% Save data separately for each file
+frame_start = 1;
+
+for n = 1:Nfile
+    % Load the original data to get the frame count for each file
+    n_data = load(fullfile(triangulated_data_path, filename{n}), 'X');
+    n_data = n_data.X;
+    
+    % Extract number of frames per file
+    Nframe_file = size(n_data, 3);
+    % Calculate final frame index of current file (with respect to
+    % concatenated variables)
+    frame_end = frame_start + Nframe_file - 1;
+
+    % Extract corresponding portion of fitted data
+    Xfit = Xfit_all_data(:, :, frame_start:frame_end);
+    b = b_all_data(:, frame_start:frame_end);
+    C = C_all_data(frame_start:frame_end);
+    X = X_all_data(:, :, frame_start:frame_end);
+    missing = missing_all_data(frame_start:frame_end);
+    A = A_all_data(:, frame_start:frame_end);
+    T = T_all_data(:, frame_start:frame_end);
+
+    % Save the fitted data with the appropriate filename
+    save(fullfile(triangulated_data_path, [filename{n}(1:end-4) '_' which_part '_fit.mat']), ...
+        'b', 'Xfit', 'C', 'X', 'missing', 'A', 'T');
+
+    % Update frame counter
+    frame_start = frame_end + 1;
+end
+
 
 function[Xfit,b,A,T,C,missing] = fit_data(X,lambda,mean_pose,P,var_res,min_num)
 alpha_reg = 0.1;% 0.001;
