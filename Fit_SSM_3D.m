@@ -1,4 +1,4 @@
-function[Xfit,b,t] = Fit_SSM(triangulated_data_path, which_part)
+function[Xfit,b,t] = Fit_SSM_3D(triangulated_data_path, which_part)
 
 %which_part is 'body' or 'tail' depending whether you re going to
 %use fit SSM for body or tail. They will be saved separately. 
@@ -56,7 +56,7 @@ Nbp = numel(ind);
 %rearrange model 
 lambda = eignValues(1:Neig);
 var_res = mean(eignValues(Neig+1:end));
-mean_pose = Mean_pPCA;
+mean_pose = reshape(Mean_pPCA, [Nbp, Ndim]); %mean_pose = Mean_pPCA;
 eigen2=reshape(eignVectors(:,:),Ndim,Nbp,Nbp*Ndim);
 for i=1:Nbp*Ndim
     P(:,:,i)=(eigen2(:,:,i)');
@@ -68,10 +68,10 @@ Xfit_all_data = zeros(Nbp,Ndim,Nframe);
 b_all_data = zeros(Neig,Nframe);
 C_all_data = zeros(1,Nframe);
 A_all_data = zeros(1,Nframe);
-T_all_data = zeros(2,Nframe);
+T_all_data = zeros(3,Nframe);
 missing_all_data = true(1,Nframe);
 
-parfor n = 1:Nframe
+for n = 1:Nframe
     [Xfit_all_data(:,:,n),b_all_data(:,n),A_all_data(n),T_all_data(:,n),C_all_data(n),missing_all_data(n)] = fit_data(X_all_data(:,:,n),lambda,mean_pose,P,var_res,min_num);
     fprintf('frame %s of %s\n',num2str(n),num2str(Nframe));
 end
@@ -116,6 +116,18 @@ stop_search = false;
 options = optimoptions('fminunc','Display','none');
 %init shape parameters
 b0 = zeros(Nshape,1);
+
+% Check if there are any NaNs in X
+    if any(isnan(X(:)))
+        missing = true;  % Mark this frame as missing
+        Xfit = NaN * mean_pose;
+        T = NaN(3, 1);  % Set 3D translation as NaN
+        A = NaN;        % Set angle as NaN
+        b = NaN * ones(Nshape, 1);
+        C = 1000;       % High cost for missing data
+        return;
+    end
+    
 %fit the SSM
 ind_num = find(~isnan(X(:,1)));
 missing = false;
@@ -127,7 +139,7 @@ if numel(ind_num)>=min_num
         Xfit = Xfit + b(n)*P(:,:,n);
     end
     Xfit = Xfit*R + repmat(T,Nbp,1);
-    A = rotm2eul([R(1,:) 0; R(2,:) 0; 0 0 1]);
+    A = rotm2eul(R);
     A = A(1);
 else
     missing = true;
@@ -169,4 +181,4 @@ C = dist+reg;
 %
 R = tr.T;
 T = tr.c(1,:);
-%%
+%

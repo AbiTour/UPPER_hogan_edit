@@ -1,4 +1,4 @@
-function[] = Estimate_SSM_3D(which_part, triangulated_data_path, SSM_model_name_path)
+function[] = Estimate_SSM_3D_(which_part, triangulated_data_path, SSM_model_name_path)
 %INPUT: which_part is 'body' or 'tail' depending whether you re going to
 %estimate Statistical Shape Model for body or tail. They will be saved separately. 
 
