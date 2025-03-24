@@ -1,4 +1,4 @@
-function [Data_3D_KNN mean_pose_3D mean_pose_ppca Cov_pPCA eignValues eignVectors]=Estimation_Model(RawData3D,Threshold_Eigen)
+function [Data_3D_KNN Data_3D_align mean_pose_3D mean_pose_ppca Cov_pPCA eignValues eignVectors]=Estimation_Model(RawData3D,Threshold_Eigen)
 %this function receives data including missing data and outliers. estimate
 %the robust covariance matrix and return the covariance matrix and eigenpose
 %and eigenvalues
@@ -17,6 +17,7 @@ Data_3D_KNN_P=Data_3D_KNN ;
 %%%%%%%
 %PPCA
 [mean_pose_ppca, ~, Cov_pPCA, eignValues, eignVectors] = pPCA(Data_3D_KNN,Threshold_Eigen,true);
-%mean_pose_3D_ppca = reshape(mean_pose_ppca,[Np,Framedim]);
+
+
 
 end

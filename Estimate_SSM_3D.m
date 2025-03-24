@@ -1,4 +1,4 @@
-function[] = Estimate_SSM_3D_(which_part, triangulated_data_path, SSM_model_name_path)
+function[] = Estimate_SSM_3D(which_part, triangulated_data_path, SSM_model_name_path)
 %INPUT: which_part is 'body' or 'tail' depending whether you re going to
 %estimate Statistical Shape Model for body or tail. They will be saved separately. 
 
@@ -56,8 +56,14 @@ selected_3D_data = selected_3D_data(:,:,ind_rand);
 % Estimation_Model function eceives the 3D data and return the Data which all missing data filled up and  mean
 % estimated by Ransac, Mean of pPCA, Covariance of pPCA and Eigenvalues
 % and eigenpose
-[Data_3D_KNN Mean_Ransac_3D Mean_pPCA Cov_pPCA eignValues eignVectors]=Estimation_Model(selected_3D_data,0.8);
+[Data_3D_KNN Data_3D_align Mean_Ransac_3D Mean_pPCA Cov_pPCA eignValues eignVectors]=Estimation_Model(selected_3D_data,0.8);
 
 
 % save model
-save(SSM_model_name_path, "Data_3D_KNN", "Mean_Ransac_3D", "Mean_pPCA", "Cov_pPCA", "eignValues", "eignVectors"); 
+save(SSM_model_name_path, "Data_3D_KNN", "Data_3D_align", "Mean_Ransac_3D", "Mean_pPCA", "Cov_pPCA", "eignValues", "eignVectors"); 
+
+% plotting results
+plot_3D_mean_and_eigen_poses(Data_3D_align, Mean_pPCA, eignValues, eignVectors)
+
+
+end

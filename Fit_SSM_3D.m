@@ -1,4 +1,4 @@
-function[Xfit,b,t] = Fit_SSM_3D(triangulated_data_path, which_part, save_path)
+function[Xfit,b,t] = Fit_SSM_3D(triangulated_data_path, which_part, save_path, SSM_model_name_path)
 
 %which_part is 'body' or 'tail' depending whether you re going to
 %use fit SSM for body or tail. They will be saved separately. 
@@ -20,7 +20,7 @@ end
 % Load SSM
 if strcmp(which_part,'body')
    ind = 1:7;
-   load('mouse1_10_3Dssm.mat','Mean_pPCA','eignValues','eignVectors');
+   load(SSM_model_name_path,'Mean_pPCA','eignValues','eignVectors');
    min_num = 6;
 elseif strcmp(which_part,'tail')
    ind = 8:10; 

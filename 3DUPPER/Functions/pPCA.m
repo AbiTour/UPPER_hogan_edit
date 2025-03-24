@@ -1,4 +1,4 @@
-function [mean_data NumDimcut Cov_pPCA eignValues eignVectors]=pPCA(Data_3D,Threshold_Eigen,graph)
+function [mean_data, NumDimcut, Cov_pPCA, eignValues, eignVectors]=pPCA(Data_3D,Threshold_Eigen,graph)
 %ref
 %https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.934.5867&rep=rep1&type=pdf
 
