@@ -39,7 +39,12 @@ mean_pose_3D_ppca = reshape(Mean_pPCA,[Np,Framedim]);
     xlabel('X'); ylabel('Y'); zlabel('Z');
     grid on;
     view(3);
-    xlim([-30 0]); ylim([0 30]); zlim([-10 10])
+     xlim([10 20]); ylim([8 18]); zlim([0 6]);
+    % xlim auto
+    % ylim auto
+    % zlim auto
+    view(80, 45)
+
         
     title('3D Mouse Body Markers with Mean Pose');
             
@@ -69,7 +74,7 @@ mean_pose_vec = reshape(mean_pose_3D_ppca', [], 1);  % [21 x 1], column vector
 figure;
 h = subplot(1,1,1); hold on;
 
-for n = 1:3  % Visualize the first 3 eigenposes
+for n = 1:4  % Visualize the first 3 eigenposes
     for m = 1:T
         % Compute pose variation along eigenvector n with sine modulation
         pose_vec = mean_pose_vec + ...
@@ -83,10 +88,12 @@ for n = 1:3  % Visualize the first 3 eigenposes
             60, 'r', 'filled');
         
         % Set plot limits and labels
-         xlim([-20 -5]); ylim([5 20]); zlim([-5 5]);
+        xlim([10 20]); ylim([8 18]); zlim([0 6]);
+        
+        view(80, 45)
         xlabel('X'); ylabel('Y'); zlabel('Z');
         title(['Eigenpose ' num2str(n)]);
-        view(3);
+        % view(3);
         grid on;
         
         drawnow;

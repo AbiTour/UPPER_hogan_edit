@@ -1,10 +1,10 @@
 function[] = make_movie_2D()
 
-load('Result_040222_95_percent.mat')
+%load('Result_040222_95_percent.mat')
 %make a movie for change in body shape along directions of the eigenposes
 lambda = eignValues(1:5);
 
-[Np Ndim Ns]=size(Data_reconstruct_3D);
+[Np Ndim Ns]=size(Recounstructed_Data_full);
 
 
 Nshape = numel(lambda);
